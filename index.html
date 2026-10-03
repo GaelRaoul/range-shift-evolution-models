@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Population models — side-by-side comparison</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #f5f7fb;
+      --panel: #ffffff;
+      --text: #182033;
+      --muted: #687386;
+      --border: #d9deea;
+      --accent: #315fbd;
+      --accent-soft: #eaf0ff;
+      --danger: #a33a3a;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #111522;
+        --panel: #1a2030;
+        --text: #edf1fa;
+        --muted: #aab4c8;
+        --border: #343d52;
+        --accent: #8daeff;
+        --accent-soft: #223054;
+        --danger: #ff9f9f;
+      }
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: var(--bg); color: var(--text); }
+    .wrap { max-width: 1500px; margin: 0 auto; padding: 28px 18px 50px; }
+    h1 { margin: 0 0 8px; font-size: clamp(1.7rem, 3vw, 2.45rem); }
+    h2 { font-size: 1.12rem; margin: 0 0 14px; }
+    p { line-height: 1.5; }
+    .subtitle { max-width: 1100px; margin: 0; color: var(--muted); }
+    .panel { margin-top: 18px; padding: 18px; border: 1px solid var(--border); border-radius: 14px; background: var(--panel); }
+    .sim-selectors { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .sim-card { border: 1px solid var(--border); border-radius: 12px; padding: 14px; min-width: 0; }
+    .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(145px, 1fr)); gap: 12px; align-items: end; }
+    .shared-controls { margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border); }
+    label { display: grid; gap: 6px; font-size: .9rem; color: var(--muted); }
+    input, select, button { min-height: 42px; border-radius: 9px; border: 1px solid var(--border); background: var(--panel); color: var(--text); padding: 9px 10px; font: inherit; }
+    button { cursor: pointer; font-weight: 650; }
+    button.primary { background: var(--accent); color: white; border-color: var(--accent); }
+    button.secondary { background: var(--accent-soft); color: var(--text); }
+    button:disabled { opacity: .55; cursor: wait; }
+    .description { margin-top: 10px; padding: 10px 12px; border-left: 3px solid var(--accent); background: var(--accent-soft); border-radius: 0 9px 9px 0; font-size: .86rem; line-height: 1.42; }
+    .description .equation { margin-top: 8px; padding: 9px 10px; background: #f8fafc; color: #182033; border: 1px solid var(--border); border-radius: 7px; overflow-x: auto; font-family: "DejaVu Serif", "Times New Roman", serif; font-size: .88rem; line-height: 1.55; }
+    .description ul { margin: 8px 0 0 20px; padding: 0; }
+    .description li { margin: 4px 0; }
+    .math { font-family: "DejaVu Serif", "Times New Roman", serif; }
+    .status { min-height: 1.5em; color: var(--muted); margin: 12px 0 0; }
+    .status.error { color: var(--danger); }
+    .comparison-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; align-items: start; }
+    .result-card { border: 1px solid var(--border); border-radius: 13px; padding: 14px; min-width: 0; }
+    .result-title { display: flex; justify-content: space-between; gap: 10px; align-items: baseline; flex-wrap: wrap; }
+    .result-title strong { font-size: 1.08rem; }
+    .result-title span { color: var(--muted); font-size: .9rem; }
+    .metrics { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px 12px; margin: 10px 0 14px; }
+    .metric { border-top: 1px solid var(--border); padding-top: 7px; }
+    .metric span { display: block; color: var(--muted); font-size: .75rem; }
+    .metric strong { display: block; margin-top: 2px; font-size: .96rem; }
+    canvas { width: 100%; height: auto; border: 1px solid var(--border); border-radius: 9px; background: #fff; display: block; }
+    .profile-canvas { margin-top: 12px; }
+    .legend { margin-top: 6px; color: var(--muted); font-size: .79rem; line-height: 1.4; }
+    .time-row { display: grid; grid-template-columns: auto minmax(180px, 1fr) auto; gap: 12px; align-items: center; margin-top: 16px; }
+    .time-row input { width: 100%; padding: 0; }
+    .time-pair { text-align: right; font-size: .9rem; }
+    .time-pair span { display: block; }
+    .hidden { display: none !important; }
+    .note { color: var(--muted); font-size: .85rem; margin-top: 17px; }
+    .badge { display:inline-block; padding:2px 7px; border-radius:999px; background:var(--accent-soft); font-size:.78rem; }
+    @media (max-width: 1000px) { .comparison-grid, .sim-selectors { grid-template-columns: 1fr; } }
+    @media (max-width: 650px) { .time-row { grid-template-columns: auto 1fr; } .time-pair { grid-column: 1 / -1; text-align: left; } }
+  </style>
+</head>
+<body>
+<main class="wrap">
+  <header>
+    <h1>Population models — side-by-side simulations</h1>
+    <p class="subtitle">Choose a model, climate speed <em>c</em>, and environmental gradient <em>b</em> independently for simulations A and B. Defaults are <em>c</em> = 0.2 and <em>b</em> = 1. The global parameters <em>r</em><sub>max</sub> and <em>k</em> apply to all three models. For the sexual model, <em>V</em><sub>LE</sub> is adjustable and enters both the dynamics and the physical phenotype scaling. Population scale <em>K</em> and the random seed appear only for stochastic asexual simulations. The two panels use synchronized snapshots and common display axes. All computations run locally in the browser through Pyodide/WebAssembly.</p>
+  </header>
+
+  <section class="panel">
+    <div class="sim-selectors">
+      <div class="sim-card">
+        <h2>Simulation A</h2>
+        <div class="controls">
+          <label>Model
+            <select id="modelA">
+              <option value="asexual_deterministic">Asexual — deterministic</option>
+              <option value="asexual_stochastic">Asexual — stochastic</option>
+              <option value="sexual">Sexual</option>
+            </select>
+          </label>
+          <label>Climate speed c
+            <input id="cA" type="number" min="-4" max="8" step="0.05" value="0.2">
+          </label>
+          <label>Environmental gradient b
+            <input id="bA" type="number" min="0" max="3" step="0.05" value="1">
+          </label>
+          <label id="specificLabelA"><span id="specificNameA">μ²</span>
+            <input id="specificA" type="number" min="0.001" max="10" step="0.01" value="0.64">
+          </label>
+          <label id="kLabelA" class="hidden">Population scale K
+            <input id="KValueA" type="number" min="1000" max="10000000" step="1000" value="5000">
+          </label>
+          <label id="seedLabelA" class="hidden">Random seed
+            <input id="seedValueA" type="number" min="0" max="2147483647" step="1" value="1">
+          </label>
+        </div>
+        <div id="descriptionA" class="description"></div>
+      </div>
+
+      <div class="sim-card">
+        <h2>Simulation B</h2>
+        <div class="controls">
+          <label>Model
+            <select id="modelB">
+              <option value="asexual_deterministic">Asexual — deterministic</option>
+              <option value="asexual_stochastic">Asexual — stochastic</option>
+              <option value="sexual" selected>Sexual</option>
+            </select>
+          </label>
+          <label>Climate speed c
+            <input id="cB" type="number" min="-4" max="8" step="0.05" value="0.2">
+          </label>
+          <label>Environmental gradient b
+            <input id="bB" type="number" min="0" max="3" step="0.05" value="1">
+          </label>
+          <label id="specificLabelB"><span id="specificNameB">VLE</span>
+            <input id="specificB" type="number" min="0.001" max="5" step="0.001" value="0.3">
+          </label>
+          <label id="kLabelB" class="hidden">Population scale K
+            <input id="KValueB" type="number" min="1000" max="10000000" step="1000" value="5000">
+          </label>
+          <label id="seedLabelB" class="hidden">Random seed
+            <input id="seedValueB" type="number" min="0" max="2147483647" step="1" value="1">
+          </label>
+        </div>
+        <div id="descriptionB" class="description"></div>
+      </div>
+    </div>
+
+    <div class="shared-controls">
+      <h2>Shared simulation settings</h2>
+      <div class="controls">
+        <label>Selection variance Vs
+          <input id="VsValue" type="number" min="0.05" max="20" step="0.05" value="1">
+        </label>
+        <label>Spatial dispersal σ
+          <input id="sigmaxValue" type="number" min="0.01" max="10" step="0.05" value="1">
+        </label>
+        <label>Maximum growth r<sub>max</sub>
+          <input id="rmaxValue" type="number" min="0.05" max="3" step="0.05" value="1">
+        </label>
+        <label>Competition scale k
+          <input id="competitionKValue" type="number" min="0.05" max="20" step="0.05" value="1">
+        </label>
+        <label>Final time
+          <input id="tfinal" type="number" min="2" max="80" step="1" value="20">
+        </label>
+        <label>Resolution
+          <select id="preset">
+            <option value="fast">Fast demo</option>
+            <option value="balanced">Balanced</option>
+            <option value="fine">Fine</option>
+          </select>
+        </label>
+        <label>Snapshots
+          <input id="snapshots" type="number" min="4" max="32" step="1" value="16">
+        </label>
+        <button id="runButton" class="primary" type="button" disabled>Run both simulations</button>
+      </div>
+    </div>
+
+    <p id="status" class="status" aria-live="polite">Loading the browser Python engine…</p>
+  </section>
+
+  <section id="results" class="panel hidden">
+    <div class="comparison-grid">
+      <article class="result-card">
+        <div class="result-title"><strong id="titleA">Simulation A</strong><span id="subtitleA"></span></div>
+        <div id="metricsA" class="metrics"></div>
+        <canvas id="heatmapA" width="690" height="400" aria-label="Simulation A population heatmap"></canvas>
+        <div class="legend">Heatmap: population over space and trait. Solid curve: local mean trait. Dashed curve: moving environmental optimum.</div>
+        <canvas id="profileA" class="profile-canvas" width="690" height="235" aria-label="Simulation A population density"></canvas>
+        <div class="legend">Population density <em>N(x)</em>, integrated over trait; dashed vertical line(s) show detected front positions.</div>
+        <canvas id="meanTraitA" class="profile-canvas" width="690" height="235" aria-label="Simulation A mean phenotypic trait"></canvas>
+        <div class="legend">Mean phenotypic trait: solid blue <em>Z(x)</em>; dashed orange <em>Z<sub>opt</sub>(x)</em> is the local environmental optimum. Both curves are shown where population density is non-negligible.</div>
+        <canvas id="varianceA" class="profile-canvas" width="690" height="235" aria-label="Simulation A phenotypic variance"></canvas>
+        <div class="legend">Phenotypic variance <em>V(x)</em> (local variance in the phenotypic variable). The curve is shown only where population density is non-negligible.</div>
+      </article>
+
+      <article class="result-card">
+        <div class="result-title"><strong id="titleB">Simulation B</strong><span id="subtitleB"></span></div>
+        <div id="metricsB" class="metrics"></div>
+        <canvas id="heatmapB" width="690" height="400" aria-label="Simulation B population heatmap"></canvas>
+        <div class="legend">Heatmap: population over space and trait. Solid curve: local mean trait. Dashed curve: moving environmental optimum.</div>
+        <canvas id="profileB" class="profile-canvas" width="690" height="235" aria-label="Simulation B population density"></canvas>
+        <div class="legend">Population density <em>N(x)</em>, integrated over trait; dashed vertical line(s) show detected front positions.</div>
+        <canvas id="meanTraitB" class="profile-canvas" width="690" height="235" aria-label="Simulation B mean phenotypic trait"></canvas>
+        <div class="legend">Mean phenotypic trait: solid blue <em>Z(x)</em>; dashed orange <em>Z<sub>opt</sub>(x)</em> is the local environmental optimum. Both curves are shown where population density is non-negligible.</div>
+        <canvas id="varianceB" class="profile-canvas" width="690" height="235" aria-label="Simulation B phenotypic variance"></canvas>
+        <div class="legend">Phenotypic variance <em>V(x)</em> (local variance in the phenotypic variable). The curve is shown only where population density is non-negligible.</div>
+      </article>
+    </div>
+
+    <div class="time-row">
+      <button id="playButton" class="secondary" type="button">▶ Play</button>
+      <input id="timeSlider" type="range" min="0" max="0" step="1" value="0" aria-label="Shared time snapshot">
+      <div class="time-pair"><span id="timeA">A: t = 0</span><span id="timeB">B: t = 0</span></div>
+    </div>
+  </section>
+
+  <p class="note"><span class="badge">Exploratory web tool</span> The slider advances both simulations together by snapshot index. The shared V<sub>s</sub> and σ controls apply to the asexual models; the restored sexual solver keeps σ = 1 and V<sub>s</sub> = 1 internally. The global parameters r<sub>max</sub> and k apply to all three models. Computations run locally in your browser; the archived Python programs remain the reproducibility reference.</p>
+  <p id="resourceLinks" class="note hidden"><strong>Resources:</strong> <a id="scientificCodeLink" class="hidden" target="_blank" rel="noopener">scientific/reproducibility code</a><span id="linkSep1" class="hidden"> · </span><a id="articleLink" class="hidden" target="_blank" rel="noopener">article</a><span id="linkSep2" class="hidden"> · </span><a id="sourceRepositoryLink" class="hidden" target="_blank" rel="noopener">simulator source</a></p>
+</main>
+<script src="config.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
