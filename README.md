@@ -1,5 +1,13 @@
 # Simulation code for *When do leading and rear edges of the range shift slower or faster than climate? Insights from a mathematical model*
 
+## Interactive simulator
+
+An interactive browser-based version of the three models is available here:
+
+**[Launch the interactive simulator](https://gaelraoul.github.io/range-shift-evolution-models/)**
+
+The simulations run directly in the browser; no installation is required.
+
 **Authors:** Gaël Raoul, Matthieu Alfaro, Ophélie Ronce  
 **Corresponding author / contact:** Ophélie Ronce — ophelie.ronce@umontpellier.fr  
 **Publication or preprint:** Manuscript in preparation; DOI/URL to be added after deposition.  
