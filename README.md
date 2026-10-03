@@ -1,5 +1,5 @@
 # Simulation code for *When do leading and rear edges of the range shift slower or faster than climate? Insights from a mathematical model*
-
+[![DOI](https://zenodo.org/badge/1401622942.svg)](https://doi.org/10.5281/zenodo.23125708)
 ## Interactive simulator
 
 An interactive browser-based version of the three models is available here:
@@ -11,7 +11,7 @@ The simulations run directly in the browser; no installation is required.
 **Authors:** Gaël Raoul, Matthieu Alfaro, Ophélie Ronce  
 **Corresponding author / contact:** Ophélie Ronce — ophelie.ronce@umontpellier.fr  
 **Publication or preprint:** Manuscript in preparation; DOI/URL to be added after deposition.  
-**Software archive DOI / release:** To be added after deposition.  
+**Software archive DOI / release:** v1.0.0 — [10.5281/zenodo.23125709](https://doi.org/10.5281/zenodo.23125709)  
 **License:** MIT License (see `LICENSE`).
 
 **Code development:** Gaël Raoul developed the simulation codes, in scientific discussion with Matthieu Alfaro and Ophélie Ronce.
